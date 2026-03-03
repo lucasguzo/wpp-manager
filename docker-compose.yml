@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  wpp-manager:
+
+    image: lucasguzo/wpp-manager:latest
+    container_name: wpp-manager
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    # Se você já tiver um banco postgresql em outro container, 
+    # você pode conectá-lo passando a variável de ambiente DATABASE_URL
+    # environment:
+    #   - DATABASE_URL=postgresql://usuario:senha@host:5432/wppmanager
