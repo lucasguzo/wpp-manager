@@ -1,71 +1,96 @@
-🚀 WPP-Manager
-A interface visual definitiva para gerenciar suas instâncias do WPPConnect Server.
+# 🚀 WPP-Manager
 
-O WPP-Manager é um painel de controle moderno, desenvolvido com Next.js 14 e Prisma, projetado para facilitar o gerenciamento de múltiplas sessões do WPPConnect Server. Chega de gerenciar conexões via Postman ou Insomnia.
+**A interface visual definitiva para gerenciar suas instâncias do WPPConnect Server.**
 
-✨ Funcionalidades
-Gerenciamento Multi-Sessão: Crie, conecte e monitore múltiplas contas de WhatsApp em um único painel.
-Identificação Inteligente: Sistema de sessionId único para evitar conflitos entre instâncias.
-Visualização de QR Code: Interface em tempo real para autenticação de novos dispositivos.
-Status em Tempo Real: Monitoramento visual (Connected, Disconnected, Syncing).
-Otimização de Performance: Opção integrada para desativar o historySync, economizando RAM do seu servidor.
-Segurança: Abstração completa da SECRET_KEY do WPPConnect no Backend (Server Actions).
+O **WPP-Manager** é um painel de controle moderno, desenvolvido com **Next.js 14** e **Prisma**, projetado para facilitar o gerenciamento de múltiplas sessões do [WPPConnect Server](https://github.com/wppconnect-team/wppconnect-server). 
 
-🛠️ Stack Tecnológica
-Framework: Next.js 14 (App Router)
-Estilização: Tailwind CSS + Shadcn/UI
-Banco de Dados: Prisma ORM (PostgreSQL/MySQL/SQLite)
-Ícones: Lucide React
-Comunicação: WPPConnect Server API
+> 💡 **Cansado de gerenciar conexões via Postman ou Insomnia?** O WPP-Manager oferece uma interface amigável para escalar seus atendimentos sem precisar abrir o terminal para cada nova conexão.
 
-🚀 Como Começar
-Pré-requisitos
-Ter um WPPConnect Server rodando (Local ou VPS).
-Node.js 18+ instalado.
+---
 
-Instalação
-Clone o repositório:
+## ✨ Funcionalidades
 
-git clone https://github.com/seu-usuario/WPP-Manager.git
-cd WPP-Manager
-Instale as dependências:
+* **Gerenciamento Multi-Sessão:** Crie, conecte e monitore múltiplas contas de WhatsApp em um único dashboard centralizado.
+* **Identificação Inteligente:** Sistema de `sessionId` único gerado automaticamente para evitar conflitos entre instâncias de diferentes clientes.
+* **Visualização de QR Code:** Interface nativa para leitura de QR Code sem necessidade de ferramentas externas.
+* **Status em Tempo Real:** Monitoramento visual do ciclo de vida da conexão (Connected, Disconnected, QR Code, Syncing).
+* **Otimização de Infraestrutura:** Opção integrada para desativar o `historySync` via UI, economizando memória RAM e processamento na sua VPS.
+* **Arquitetura Segura:** Abstração da `SECRET_KEY` no servidor (Server-side), garantindo que tokens mestres nunca sejam expostos no frontend.
 
-npm install
-Configure as variáveis de ambiente:
-Crie um arquivo .env na raiz do projeto:
+---
 
-DATABASE_URL="file:./dev.db"
-WPP_SERVER_URL="http://seu-ip:21462"
-WPP_SECRET_KEY="sua_secret_key_aqui"
-Prepare o banco de dados:
+## 🛠️ Stack Tecnológica
 
-npx prisma migrate dev --name init
-Inicie o projeto:
+* **Frontend/Backend:** [Next.js 14 (App Router)](https://nextjs.org/)
+* **Estilização:** [Tailwind CSS](https://tailwindcss.com/) + [Shadcn/UI](https://ui.shadcn.com/)
+* **ORM:** [Prisma](https://www.prisma.io/) (Suporta PostgreSQL, MySQL e SQLite)
+* **Ícones:** [Lucide React](https://lucide.dev/)
+* **Comunicação:** [WPPConnect Server API](https://wppconnect.io/)
 
-Bash
-npm run dev
-📋 Como usar
-Acesse http://localhost:3000.
+---
 
-Clique em "Nova Conexão".
-Dê um nome para sua loja ou setor (ex: Laralu_Vendas).
-O sistema gerará um ID único e exibirá o QR Code.
-Escaneie com seu celular e pronto! A sessão aparecerá como Connected.
+## 🚀 Como Começar
 
-🏗️ Arquitetura de Conexão
-O Dashboard atua como uma camada de gerenciamento (Orquestrador):
+### Pré-requisitos
 
+1.  Ter uma instância do **WPPConnect Server** rodando.
+2.  Node.js 18+ instalado.
+3.  Um banco de dados configurado (ou use SQLite para testes rápidos).
 
-graph LR
-  A[Interface Next.js] --> B[Server Actions / API]
-  B --> C[(Prisma DB)]
-  B --> D[WPPConnect Server]
-  D --> E[WhatsApp Web Protocol]
+### Instalação
 
-🤝 Contribuição
-Sinta-se à vontade para abrir Issues ou enviar Pull Requests. Este projeto foi criado para ajudar a comunidade a profissionalizar o uso do WPPConnect!
+1.  **Clone o repositório:**
+    ```bash
+    git clone [https://github.com/seu-usuario/wpp-manager.git](https://github.com/seu-usuario/wpp-manager.git)
+    cd wpp-manager
+    ```
 
-📝 Licença
-Distribuído sob a licença MIT. Veja LICENSE para mais informações.
+2.  **Instale as dependências:**
+    ```bash
+    npm install
+    ```
 
-Desenvolvido por Lucas com Antigravity.
+3.  **Configure as variáveis de ambiente:**
+    Crie um arquivo `.env` na raiz do projeto:
+    ```env
+    # URL do seu banco de dados
+    DATABASE_URL="file:./dev.db"
+
+    # Configurações do WPPConnect Server
+    WPP_SERVER_URL="http://seu-ip:21462"
+    WPP_SECRET_KEY="sua_secret_key_definida_no_server"
+    ```
+
+4.  **Sincronize o Banco de Dados:**
+    ```bash
+    npx prisma migrate dev --name init
+    ```
+
+5.  **Inicie o Dashboard:**
+    ```bash
+    npm run dev
+    ```
+
+---
+
+## 📋 Como usar
+
+1.  Acesse `http://localhost:3000`.
+2.  No painel principal, clique em **"Nova Conexão"**.
+3.  Insira o nome da sua loja ou cliente (ex: `Laralu_Store`).
+4.  O **WPP-Manager** gerará o ID da sessão e exibirá o QR Code na tela.
+5.  Escaneie com o celular físico e o status será atualizado automaticamente para **Connected**.
+
+---
+
+## 🏗️ Arquitetura
+
+O **WPP-Manager** atua como um orquestrador entre o seu cliente final e a API bruta do WPPConnect:
+
+```mermaid
+graph TD
+  User[Usuário/Admin] --> UI[WPP-Manager UI]
+  UI --> Server[Next.js Server Actions]
+  Server --> DB[(Prisma DB)]
+  Server --> WPP[WPPConnect Server]
+  WPP --> WA[WhatsApp Web Protocol]
