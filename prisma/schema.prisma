@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SessionStatus {
+  DISCONNECTED
+  CONNECTING
+  CONNECTED
+  QRCODE
+}
+
+model WhatsappSession {
+  id        String        @id @default(uuid())
+  storeName String
+  sessionId String        @unique
+  status    SessionStatus @default(DISCONNECTED)
+  token             String?       @db.Text
+  webhook           String?       @db.Text
+  qrcode            String?       @db.Text
+  chatwootAccountId Int?
+  chatwootToken     String?       @db.Text
+  chatwootUrl       String?       @db.Text
+  chatwootSignMsg   Boolean       @default(true)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@map("whatsapp_sessions")
+}
