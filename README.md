@@ -57,8 +57,8 @@ O **WPP-Manager** é um painel de controle moderno, desenvolvido com **Next.js 1
     DATABASE_URL="file:./dev.db"
 
     # Configurações do WPPConnect Server
-    WPP_SERVER_URL="http://seu-ip:21462"
-    WPP_SECRET_KEY="sua_secret_key_definida_no_server"
+    WPPCONNECT_URL="http://seu-ip:21462"
+    WPPCONNECT_SECRET_KEY="sua_secret_key_definida_no_server"
     ```
 
 4.  **Sincronize o Banco de Dados:**
