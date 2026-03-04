@@ -47,13 +47,15 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 # Copy start.sh and prisma schema
 COPY --from=builder --chown=nextjs:nodejs /app/start.sh ./
+COPY --from=builder --chown=nextjs:nodejs /app/check-db.js ./
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 
 # Make script executable (needs to run as root before changing USER)
 RUN chmod +x ./start.sh
 
-# Run install prisma on the runner to have the CLI available for db push
-RUN npm install prisma @prisma/client
+# Copia o Prisma do builder em vez de usar `npm install` no runner (isso tira o peso da build network no Portainer)
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
 
 USER nextjs
 

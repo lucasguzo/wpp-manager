@@ -10,6 +10,7 @@ import { QrCodeViewer } from "./qr-code-viewer"
 import { EditConnectionModal } from "./edit-connection-modal"
 import { ChatwootConfigModal } from "./chatwoot-config-modal"
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { getSessionStatus, checkConnectionSession } from "@/app/actions/whatsapp"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu"
 import {
@@ -44,6 +45,7 @@ const statusConfig = {
 }
 
 export function SessionCard({ session: initialSession }: { session: SessionProps }) {
+    const router = useRouter()
     const [session, setSession] = useState(initialSession)
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
@@ -63,30 +65,31 @@ export function SessionCard({ session: initialSession }: { session: SessionProps
             const data = await getSessionStatus(session.sessionId)
             if (data.status !== session.status) {
                 setSession(prev => ({ ...prev, status: data.status }))
+                router.refresh() // Atualiza os dados no TestMessageModal (Sessão de origem)
             }
         }, 5000)
 
         return () => clearInterval(interval)
-    }, [session.status, session.sessionId])
+    }, [session.status, session.sessionId, router])
 
-    // Health check real (60s) — verifica se o aparelho está realmente conectado
-    // Roda no mount + a cada 60 segundos para detectar desconexões
+    // Health check (60s) para as demais: verifica se conectou/desconectou externamente
     useEffect(() => {
-        if (session.status !== "CONNECTED") return;
+        if (session.status === "CONNECTING" || session.status === "QRCODE") return;
 
-        // Verificação imediata ao montar/quando ficar CONNECTED
         const checkNow = async () => {
             const data = await checkConnectionSession(session.sessionId)
             if (data.status !== session.status) {
                 setSession(prev => ({ ...prev, status: data.status }))
+                router.refresh() // Atualiza toda a tela para outras origens saberem da mudança
             }
         }
+
         checkNow()
 
-        const interval = setInterval(checkNow, 60_000) // 1 minuto
+        const interval = setInterval(checkNow, 60_000)
 
         return () => clearInterval(interval)
-    }, [session.status, session.sessionId])
+    }, [session.status, session.sessionId, router])
 
     const config = statusConfig[session.status as keyof typeof statusConfig] || statusConfig.DISCONNECTED
 
