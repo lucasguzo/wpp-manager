@@ -104,14 +104,14 @@ export async function createSession(
                         url: chatwootUrl,
                         signMsg: true
                     })
-                }, true)
+                })
                 console.log(`Chatwoot configurado para a sessão ${sessionId}`)
             } catch (err) {
                 console.error("Erro ao configurar chatwoot para a sessão:", err)
             }
         }
 
-        revalidatePath("/dashboard")
+        revalidatePath("/")
         return { success: true, session }
     } catch (error) {
         console.error("Erro start-session:", error)
@@ -137,7 +137,7 @@ export async function reconnectSession(sessionId: string) {
                 ...(session?.webhook ? { webhook: session.webhook } : {})
             })
         }, true) // Força token novo
-        revalidatePath("/dashboard")
+        revalidatePath("/")
         return { success: true }
     } catch (error) {
         console.error("Erro reconnect-session:", error)
@@ -188,13 +188,41 @@ export async function getSessionStatus(sessionId: string) {
     }
 }
 
+export async function checkConnectionSession(sessionId: string) {
+    try {
+        const response = await wppconnectFetch(sessionId, `/api/${sessionId}/check-connection-session`, {
+            method: "GET", cache: 'no-store'
+        })
+
+        // The check-connection-session endpoint returns the actual phone connection state
+        const isConnected = response.status === true || response.status === "CONNECTED" || response.result === true
+
+        const newStatus = isConnected ? SessionStatus.CONNECTED : SessionStatus.DISCONNECTED
+
+        await db.whatsappSession.update({
+            where: { sessionId },
+            data: { status: newStatus },
+        })
+
+        return { status: newStatus }
+    } catch (error) {
+        console.error("Erro check-connection-session:", error)
+        // Se der erro na chamada, marca como desconectado
+        await db.whatsappSession.update({
+            where: { sessionId },
+            data: { status: SessionStatus.DISCONNECTED },
+        })
+        return { status: SessionStatus.DISCONNECTED }
+    }
+}
+
 export async function disconnectSession(sessionId: string) {
     await wppconnectFetch(sessionId, `/api/${sessionId}/close-session`, { method: "POST" })
     await db.whatsappSession.update({
         where: { sessionId },
         data: { status: SessionStatus.DISCONNECTED, qrcode: null },
     })
-    revalidatePath("/dashboard")
+    revalidatePath("/")
 }
 
 export async function deleteSession(id: string, sessionId: string) {
@@ -205,7 +233,7 @@ export async function deleteSession(id: string, sessionId: string) {
     }
 
     await db.whatsappSession.delete({ where: { id } })
-    revalidatePath("/dashboard")
+    revalidatePath("/")
 }
 
 export async function editSession(sessionId: string, data: { storeName: string, webhook?: string }) {
@@ -216,7 +244,7 @@ export async function editSession(sessionId: string, data: { storeName: string, 
             webhook: data.webhook || null
         }
     })
-    revalidatePath("/dashboard")
+    revalidatePath("/")
     return { success: true }
 }
 
@@ -274,7 +302,7 @@ export async function configureChatwoot(
                     url: chatwootUrl,
                     signMsg: true
                 })
-            }, true)
+            })
             console.log(`Chatwoot configurado para a sessão ${sessionId} via painel posterior`)
         } catch (err: unknown) {
             console.error("Erro ao configurar chatwoot posteriormente na sessão:", err)
@@ -283,6 +311,6 @@ export async function configureChatwoot(
         }
     }
 
-    revalidatePath("/dashboard")
+    revalidatePath("/")
     return { success: true }
 }

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Loader2, AlertTriangle } from "lucide-react"
+import { toast } from "sonner"
 
 interface SessionData {
     sessionId: string
@@ -44,7 +45,7 @@ export function EditConnectionModal({
             onOpenChange(false)
         } catch (error) {
             console.error(error)
-            alert("Erro ao editar o dispositivo.")
+            toast.error("Erro ao editar o dispositivo.")
         } finally {
             setLoading(false)
         }

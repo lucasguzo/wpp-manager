@@ -5,11 +5,12 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { Smartphone, Power, Trash2, QrCode, RefreshCcw, Loader2, MoreVertical, Edit2, Key, Check, MessageCircle } from "lucide-react"
+import { toast } from "sonner"
 import { QrCodeViewer } from "./qr-code-viewer"
 import { EditConnectionModal } from "./edit-connection-modal"
 import { ChatwootConfigModal } from "./chatwoot-config-modal"
 import { useEffect, useState } from "react"
-import { getSessionStatus } from "@/app/actions/whatsapp"
+import { getSessionStatus, checkConnectionSession } from "@/app/actions/whatsapp"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu"
 import {
     AlertDialog,
@@ -54,8 +55,8 @@ export function SessionCard({ session: initialSession }: { session: SessionProps
         setSession(initialSession)
     }, [initialSession])
 
+    // Polling rápido (5s) para sessões em CONNECTING ou QRCODE
     useEffect(() => {
-        // Poll se estiver conectando ou aguardando QR Code
         if (session.status !== "CONNECTING" && session.status !== "QRCODE") return;
 
         const interval = setInterval(async () => {
@@ -68,11 +69,30 @@ export function SessionCard({ session: initialSession }: { session: SessionProps
         return () => clearInterval(interval)
     }, [session.status, session.sessionId])
 
+    // Health check real (60s) — verifica se o aparelho está realmente conectado
+    // Roda no mount + a cada 60 segundos para detectar desconexões
+    useEffect(() => {
+        if (session.status !== "CONNECTED") return;
+
+        // Verificação imediata ao montar/quando ficar CONNECTED
+        const checkNow = async () => {
+            const data = await checkConnectionSession(session.sessionId)
+            if (data.status !== session.status) {
+                setSession(prev => ({ ...prev, status: data.status }))
+            }
+        }
+        checkNow()
+
+        const interval = setInterval(checkNow, 60_000) // 1 minuto
+
+        return () => clearInterval(interval)
+    }, [session.status, session.sessionId])
+
     const config = statusConfig[session.status as keyof typeof statusConfig] || statusConfig.DISCONNECTED
 
     const handleCopyToken = async () => {
         if (!session.token) {
-            alert("Token ainda não gerado. Conecte o aparelho primeiro.")
+            toast.warning("Token ainda não gerado. Conecte o aparelho primeiro.")
             return
         }
         await navigator.clipboard.writeText(session.token)
@@ -124,7 +144,17 @@ export function SessionCard({ session: initialSession }: { session: SessionProps
                 {(session.status === "QRCODE" || session.status === "CONNECTING") && (
                     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                         <DialogTrigger asChild>
-                            <Button size="sm" variant="default" className="w-full bg-blue-600 hover:bg-blue-700 shadow-sm">
+                            <Button
+                                size="sm"
+                                variant="default"
+                                className="w-full bg-blue-600 hover:bg-blue-700 shadow-sm"
+                                onClick={async () => {
+                                    if (session.status === "QRCODE") {
+                                        setSession(prev => ({ ...prev, status: "CONNECTING" }))
+                                        await reconnectSession(session.sessionId)
+                                    }
+                                }}
+                            >
                                 <QrCode className="w-4 h-4 mr-2" /> {session.status === "CONNECTING" ? "Processando QR Code..." : "Ler QR Code"}
                             </Button>
                         </DialogTrigger>

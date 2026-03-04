@@ -11,14 +11,14 @@ COPY package.json package-lock.json ./
 COPY prisma ./prisma/
 RUN npm ci
 
+# Generate prisma client (only re-runs when package.json or prisma/ changes)
+RUN npx prisma generate
+
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-
-# Generate prisma client
-RUN npx prisma generate
 
 # Next.js telemetry
 ENV NEXT_TELEMETRY_DISABLED=1

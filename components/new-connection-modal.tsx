@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Plus, Loader2 } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
+import { toast } from "sonner"
 
 export function NewConnectionModal() {
     const [open, setOpen] = useState(false)
@@ -42,7 +43,7 @@ export function NewConnectionModal() {
             setChatwootUrl("")
         } catch (error) {
             console.error(error)
-            alert("Houve um erro ao inicializar os protocolos WPPConnect.")
+            toast.error("Houve um erro ao inicializar os protocolos WPPConnect.")
         } finally {
             setLoading(false)
         }

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Loader2 } from "lucide-react"
+import { toast } from "sonner"
 
 type ChatwootConfigModalProps = {
     session: {
@@ -35,10 +36,11 @@ export function ChatwootConfigModal({ session, open, onOpenChange }: ChatwootCon
                 token || null,
                 url || null
             )
+            toast.success("Configurações do Chatwoot salvas com sucesso.")
             onOpenChange(false)
         } catch (error) {
             console.error(error)
-            alert("Houve um erro ao atualizar os dados do Chatwoot no protocolo.")
+            toast.error("Houve um erro ao atualizar os dados do Chatwoot no protocolo.")
         } finally {
             setLoading(false)
         }
