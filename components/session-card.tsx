@@ -144,17 +144,7 @@ export function SessionCard({ session: initialSession }: { session: SessionProps
                 {(session.status === "QRCODE" || session.status === "CONNECTING") && (
                     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                         <DialogTrigger asChild>
-                            <Button
-                                size="sm"
-                                variant="default"
-                                className="w-full bg-blue-600 hover:bg-blue-700 shadow-sm"
-                                onClick={async () => {
-                                    if (session.status === "QRCODE") {
-                                        setSession(prev => ({ ...prev, status: "CONNECTING" }))
-                                        await reconnectSession(session.sessionId)
-                                    }
-                                }}
-                            >
+                            <Button size="sm" variant="default" className="w-full bg-blue-600 hover:bg-blue-700 shadow-sm">
                                 <QrCode className="w-4 h-4 mr-2" /> {session.status === "CONNECTING" ? "Processando QR Code..." : "Ler QR Code"}
                             </Button>
                         </DialogTrigger>
