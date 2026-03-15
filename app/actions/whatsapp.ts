@@ -53,12 +53,30 @@ async function wppconnectFetch(sessionId: string, endpoint: string, options: Req
     }
 
     const response = await fetch(url, { ...options, headers })
-    if (!response.ok) {
-        const errorDetails = await response.text()
-        console.error(`WPPConnect API Error (${endpoint}):`, errorDetails)
-        throw new Error(`Failed to fetch ${endpoint}`)
+    
+    // Tenta parsear o JSON mesmo se der erro, para pegar a mensagem do WPPConnect
+    let data;
+    try {
+        data = await response.json();
+    } catch (e) {
+        data = null;
     }
-    return response.json()
+
+    if (!response.ok) {
+        // Se for um erro de negócio conhecido vindo do WPPConnect, não logamos como erro fatal
+        if (data && data.message) {
+            console.warn(`WPPConnect Business Error (${endpoint}):`, data.message)
+        } else {
+            const errorText = data ? JSON.stringify(data) : await response.text()
+            console.error(`WPPConnect API Error (${endpoint}):`, errorText)
+        }
+        
+        // Retornamos o objeto com erro para o chamador tratar, em vez de dar throw Error
+        // Isso evita o log "Failed to fetch" genérico do Next.js Server Actions
+        return { error: true, status: response.status, ...data };
+    }
+    
+    return data;
 }
 
 export async function createSession(
@@ -261,15 +279,16 @@ export async function sendTestMessage(sessionId: string, phone: string, message:
             })
         })
 
-        if (response.status === "error") {
+        if (response.error || response.status === "error") {
             return { success: false, error: response.message || "Erro retornado pelo whatsapp." }
         }
 
         return { success: true, response }
     } catch (error: unknown) {
-        console.error("Erro sendMessage:", error)
-        const message = error instanceof Error ? error.message : "Falha na comunicação."
-        return { success: false, error: message }
+        // Erros reais de conexão ou código
+        console.error("Erro inesperado em sendTestMessage:", error)
+        const errorMessage = error instanceof Error ? error.message : "Falha na comunicação."
+        return { success: false, error: errorMessage }
     }
 }
 
